@@ -15,10 +15,19 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  Future<List> _getData() async {
+  Future<List<User>> _getData() async {
     var data = await http.get("https://www.json-generator.com/api/json/get/cfwZmvEBbC?indent=2");
-    List lista = json.decode(data.body); 
-    return lista;
+    var jsonData = json.decode(data.body);
+
+    List<User> users = [];
+
+    for(var u in jsonData){
+      User user = User(u["index"], u["about"], u["name"], u["email"], u["picture"]);
+      users.add(user);
+    }
+    print(users.length);
+
+    return users;
     
   }
 
@@ -42,12 +51,12 @@ class _HomeState extends State<Home> {
                 itemCount: snapshot.data.length,
                 itemBuilder: (BuildContext context, int index){
                 return ListTile(
-                  title: Text(snapshot.data[index]["name"]),
-                  leading: CircleAvatar(backgroundImage: NetworkImage(snapshot.data[index]["picture"])),
-                  subtitle: Text(snapshot.data[index]["email"]),
+                  title: Text(snapshot.data[index].name),
+                  leading: CircleAvatar(backgroundImage: NetworkImage(snapshot.data[index].picture)),
+                  subtitle: Text(snapshot.data[index].email),
                   onTap: (){
                     Navigator.push(context, new MaterialPageRoute(
-                      builder: (context) => DetailPage(snapshot, index)
+                      builder: (context) => DetailPage(snapshot.data[index])
                     ));
                   },
                   );
@@ -62,14 +71,23 @@ class _HomeState extends State<Home> {
 }
 
 class DetailPage extends StatelessWidget {
-  final AsyncSnapshot snapshot;
-  int index;
-  DetailPage(this.snapshot, this.index);
+  final User user;
+  DetailPage(this.user);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(snapshot.data[index]["name"])),
+      appBar: AppBar(title: Text(user.name)),
     );
   }
+}
+
+class User{
+  final int index;
+  final String about;
+  final String name;
+  final String email;
+  final String picture;
+
+  User(this.index, this.about, this.name, this.email, this.picture);
 }
